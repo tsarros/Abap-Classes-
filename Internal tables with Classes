@@ -1,0 +1,154 @@
+*Create a Class with 1 Attribute create internal table
+
+CLASS flights DEFINITION.
+  PUBLIC SECTION.
+
+*methods
+*Create a Constructor
+    METHODS constructor.
+
+*Method show all data
+    METHODS showAllData.
+
+*Method ShowConnidDate
+    METHODS showConnidDate
+      IMPORTING cid TYPE s_conn_id.
+
+*Method that take an airport code and return the number of flights that travel to that airport
+    METHODS numFlightsTo
+      IMPORTING cityto            TYPE s_to_city
+      RETURNING VALUE(numflights) TYPE i .
+
+
+
+*Method that takes 2 airportcodes 1 representing the departure airport and 1 representing the time
+
+    METHODS getFlightTime
+      IMPORTING cid            TYPE s_conn_id
+      RETURNING VALUE(minutes) TYPE i .
+
+
+    METHODS getConnid
+      IMPORTING cityfrom      TYPE s_from_cit
+                cityto        TYPE s_to_city
+      RETURNING VALUE(connid) TYPE s_conn_id.
+
+*method that take in a connection Id and return a structure that contains all the informaition about that
+
+    METHODS getAllConnections
+      IMPORTING cid         TYPE s_conn_id
+      RETURNING VALUE(conn) TYPE spfli.
+
+
+
+*    TYPES: fl_tab_type TYPE STANDARD TABLE OF SPFLI.
+*    data: it_fl_tab type fl_tab_type read-only.            Change this to private without read-only
+
+  PRIVATE SECTION.
+    TYPES: fl_tab_type TYPE STANDARD TABLE OF spfli.
+    DATA: it_fl_tab TYPE fl_tab_type .
+
+
+
+ENDCLASS.
+
+CLASS flights IMPLEMENTATION.
+
+  METHOD constructor.
+    SELECT * FROM spfli INTO TABLE it_fl_tab.
+
+
+  ENDMETHOD.
+
+  METHOD showAllData.
+    DATA wa_fl_tab TYPE spfli.
+
+    LOOP AT it_fl_tab INTO wa_fl_tab.
+      WRITE: /  wa_fl_tab-carrid, 5 wa_fl_tab-connid, 10 wa_fl_tab-countryfr, 14 wa_fl_tab-cityfrom, 36 wa_fl_tab-airpfrom, 40 wa_fl_tab-countryto,
+      44 wa_fl_tab-cityto, 66 wa_fl_tab-airpto, 69 wa_fl_tab-fltime, 77 wa_fl_tab-deptime, 87 wa_fl_tab-arrtime, 97 wa_fl_tab-distance, 107 wa_fl_tab-distid,
+      110 wa_fl_tab-fltype, 115 wa_fl_tab-period.
+
+    ENDLOOP.
+
+    ULINE.
+
+  ENDMETHOD.
+
+  METHOD showConnidDate.
+    DATA wa_fl_tab TYPE spfli.
+
+    READ TABLE it_fl_tab INTO wa_fl_tab WITH KEY connid = cid.
+    IF sy-subrc = 0 .
+      WRITE: / wa_fl_tab-cityfrom, 22 wa_fl_tab-airpfrom, 27 wa_fl_tab-countryto, 49 wa_fl_tab-fltime, 54 wa_fl_tab-distance.
+    ELSE.
+      WRITE: 'No record found matching connid: ', cid.
+    ENDIF.
+
+
+
+  ENDMETHOD.
+
+  METHOD numFlightsTo.
+    LOOP AT it_fl_tab TRANSPORTING NO FIELDS WHERE airpto = cityto.
+      numflights = numflights + 1 .
+
+    ENDLOOP.
+
+  ENDMETHOD.
+
+  METHOD getConnid.
+    DATA: wa TYPE spfli.
+    connid = 0.
+    READ TABLE it_fl_tab INTO wa WITH KEY AIRpFROM = cityfrom
+                                          airpto = cityto.
+    connid = wa-connid.
+
+  ENDMETHOD.
+
+  METHOD getFlightTime.
+
+    DATA: wa TYPE spfli.
+    minutes = 0.
+
+    READ TABLE it_fl_tab INTO wa WITH KEY connid = cid.
+    minutes = wa-fltime.
+
+
+  ENDMETHOD.
+
+  METHOD getAllConnections.
+
+    READ TABLE it_fl_tab INTO conn WITH KEY connid = cid.
+
+  ENDMETHOD.
+ENDCLASS.
+
+
+START-OF-SELECTION.
+
+  DATA: wa TYPE spfli.
+  DATA: temp TYPE i.
+
+  DATA my_flight_class TYPE REF TO flights.
+  CREATE OBJECT my_flight_class.
+
+  my_flight_class->showAllData( ) .
+
+  ULINE.
+  my_flight_class->showConnidDate( 1984 ) .
+
+  ULINE.
+
+  temp = my_flight_class->getConnid( cityfrom = 'JFK' cityto = 'FRA' ).
+  WRITE temp.
+  ULINE.
+
+
+  temp = my_flight_class->getFlightTime( '3504' ).
+  WRITE temp.
+  ULINE.
+
+  wa = my_flight_class->getAllConnections( 3504 ).
+  WRITE: / wa-carrid, 5 wa-connid, 10 wa-countryfr, 14 wa-cityfrom, 36 wa-airpfrom, 40 wa-countryto,
+    44 wa-cityto, 66 wa-airpto, 69 wa-fltime, 77 wa-deptime, 87 wa-arrtime, 97 wa-distance, 107 wa-distid,
+    110 wa-fltype, 115 wa-period.
