@@ -1,0 +1,83 @@
+****************************************************************PARENT OBJECT DEFINITION*********************************************************
+CLASS vehicle DEFINITION ABSTRACT.
+  PUBLIC SECTION.
+    METHODS: accelerate,
+             write_status ABSTRACT.
+    PROTECTED SECTION .
+      data speed type i.
+ ENDCLASS.
+
+****************************************************************CHILD CAR OBJECT DEFINITION*********************************************************
+
+ class car DEFINITION INHERITING FROM vehicle.
+   PUBLIC SECTION.
+     METHODS: refuel ,
+
+     write_status redefinition.
+
+   PROTECTED SECTION.
+    data fuelLevel type i.
+ ENDCLASS.
+
+
+****************************************************************CHILD BOAT OBJECT DEFINITION*********************************************************
+
+ CLASS boat DEFINITION INHERITING FROM vehicle.
+   PUBLIC SECTION.
+   METHODS: write_status REDEFINITION.
+   ENDCLASS.
+
+*Classes Implementation
+*Parent Class vehicle Implementation
+
+   class vehicle IMPLEMENTATION.
+
+      method accelerate.
+        speed = speed + 1 .
+        ENDMETHOD.
+*REMOVE THIS METHOD IMPLEMANTETION BECAUSE SWITCH IT TO ABSTRACT
+*If i have Inherit i keep this
+*        method write_status.
+*          WRITE: / 'The Vehicle speed is ' , speed LEFT-JUSTIFIED.
+*          ENDMETHOD.
+   ENDCLASS.
+
+
+*Child Class Implemantation
+
+   class car IMPLEMENTATION.
+      method refuel.
+        fuelLevel = 60.
+        WRITE: / 'You have just filled up you fuel tank ' , fuelLevel LEFT-JUSTIFIED.
+         ENDMETHOD.
+
+         method write_status.
+           WRITE: / 'The car speed is ' , speed LEFT-JUSTIFIED.
+           ENDMETHOD.
+   ENDCLASS.
+
+   CLASS boat IMPLEMENTATION.
+
+         method write_status.
+           WRITE: / 'The Boat speed is ' , speed LEFT-JUSTIFIED.
+*           call METHOD super->write_status                     Can't call the super class because switched to abstract
+
+           ENDMETHOD.
+       endclass.
+
+*START OF SELECTION
+
+   START-OF-SELECTION.
+
+   DATA : car1 TYPE REF TO car.
+   data: boat1 type REF TO boat.
+
+   create OBJECT: car1,
+                  boat1.
+
+   car1->accelerate( ) .
+   car1->write_status( ) .
+   car1->refuel( ) .
+
+   boat1->accelerate( ).
+   boat1->write_status( ).
