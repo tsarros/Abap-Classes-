@@ -1,0 +1,144 @@
+
+CLASS cars DEFINITION.
+  PUBLIC SECTION.
+
+   CLASS-DATA: numberOfCars TYPE i.      "static attribute
+
+   CLASS-METHODS class_constructor.       "static constructor
+
+    METHODS constructor
+      IMPORTING
+        make          TYPE c
+        model         TYPE c
+        numberofseats TYPE i
+        maxspeed      TYPE i.
+*        numberOfCars  TYPE i.
+
+    methods viewcar.
+
+    METHODS setnumberofseats
+      IMPORTING
+        newseatnumber TYPE i.
+
+    METHODS goFaster
+      IMPORTING
+        increment TYPE i
+      EXPORTING
+        result    TYPE i.
+
+    METHODS goSlower
+      IMPORTING
+                increment     TYPE i
+      RETURNING VALUE(result) TYPE i.
+
+
+  PRIVATE SECTION.
+    DATA: make          TYPE c LENGTH 20,
+          model         TYPE c LENGTH 20,
+          numberofseats TYPE i  , "read-only ( can have access from outside but they can only be read)
+          speed         TYPE i,
+          maxspeed      TYPE i.
+
+
+      CLASS-DATA: carlog type c LENGTH 40.    "used by class_consturctor
+
+ENDCLASS.  "car definition
+
+CLASS cars IMPLEMENTATION.
+
+  METHOD setnumberofseats.
+    numberofseats = newseatnumber.
+  ENDMETHOD.
+
+  METHOD goFaster.
+    DATA tmpspeed TYPE i.
+    tmpspeed = speed + increment .
+    IF tmpspeed <= maxspeed.
+      speed = speed + increment.
+    ENDIF.
+    result = speed.
+  ENDMETHOD.
+
+  METHOD goSlower.
+    DATA tmpspeed TYPE i.
+    tmpspeed = speed - increment.
+    IF tmpspeed >= 0 .
+      speed = speed - increment.
+
+    ENDIF.
+    result = speed.
+  ENDMETHOD.
+
+
+  method class_constructor.
+    carlog = 'Car class has been used' .
+    WRITE: / carlog.
+
+  ENDMETHOD.
+  METHOD constructor.
+
+*                                           "Instance Constructor
+*    make = make.                           "Run a syntax check and notice the error. We have an ATTRIBUTE & PARAMETER with the same name
+*    model = model.                         "This is where we can use the SELF-Reference notation  me->attribute_name
+*    numseats = numseats.
+*    maxspeed = maxspeed.
+*    numberOfCars = numberOfCars.
+    me->make = make.
+    me->model = model.
+    me->numberofseats = numberofseats.
+    me->maxspeed = maxspeed.
+    numberOfCars = numberOfCars + 1 .
+  ENDMETHOD.
+
+    METHOD viewcar.                           " Add this as a check and DEBUG the code.
+    WRITE: / 'Make = ', 19 make.
+    WRITE: / 'Model = ', 19 model .
+    WRITE: / 'Number of Seats = ', 19 numberofseats LEFT-JUSTIFIED.
+    WRITE: / 'Max Speed = ', 19 maxspeed LEFT-JUSTIFIED.
+    WRITE: / 'Speed = ', 19 speed LEFT-JUSTIFIED.
+  ENDMETHOD.                    "viewcar
+
+ENDCLASS.
+
+
+
+START-OF-SELECTION.
+
+  data: theresult type i.
+  DATA: car1 TYPE REF TO cars .
+
+  CREATE OBJECT car1
+    EXPORTING
+      make = 'AUDI'
+      model = 'A4'
+      numberofseats = 5
+      maxspeed = 120.
+
+car1->viewcar( ).
+
+ULINE.
+
+car1->setnumberofseats( 4 ).
+car1->viewcar( ).
+ULINE.
+
+car1->goFaster( EXPORTING increment = 25 IMPORTING result = theresult ) .
+car1->viewcar( ) .
+WRITE: / ' The result of goFaster is :' , theresult LEFT-JUSTIFIED.
+ULINE.
+
+car1->goSlower( EXPORTING increment = 15 RECEIVING result = theresult ) .
+car1->viewcar( ) .
+WRITE: / ' The result of goSlower is :' , theresult LEFT-JUSTIFIED.
+ULINE.
+
+WRITE: / 'The number of cars created is : ', cars=>numberOfCars LEFT-JUSTIFIED.
+
+ULINE.
+
+
+*A better way of calling a Function method is .....
+theresult = car1->goSlower( 5 ) .
+car1->viewcar( ) .
+WRITE: / ' The result of goSlower (Functional method) :' , theresult LEFT-JUSTIFIED.
+ULINE.
