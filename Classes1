@@ -1,0 +1,67 @@
+CLASS student DEFINITION.
+
+  PUBLIC SECTION.
+    DATA: name   TYPE c LENGTH 40,
+*          gender TYPE c LENGTH 1 READ-ONLY.
+          status TYPE c LENGTH 1.
+    CLASS-DATA: count TYPE i.
+
+    METHODS setname
+      IMPORTING namein TYPE c.
+
+    METHODS getname
+*    IMPORTING
+      EXPORTING nameout TYPE c.
+
+    METHODS setstatus
+      CHANGING newstatus TYPE c .
+
+
+* functional method
+    METHODS getstatustext
+      IMPORTING VALUE(statcode) TYPE c
+      RETURNING VALUE(stattext) TYPE string.
+
+  PRIVATE SECTION.
+    DATA: loginid TYPE c LENGTH 10,
+          pwd     TYPE c LENGTH 15.
+
+************************************DECLARE PRIVATE METHODS*************************
+
+
+
+ENDCLASS.
+
+CLASS student IMPLEMENTATION.
+
+  METHOD setname.
+    name = namein.
+  ENDMETHOD.
+
+  METHOD getname.
+    nameout = name.
+  ENDMETHOD.
+  METHOD setstatus.
+    IF newstatus CO 'MF'.
+      status = newstatus.
+      newstatus = '1'.
+    ELSE .
+      newstatus = '2'.
+    ENDIF.
+  ENDMETHOD.
+
+* functional method
+  METHOD getstatustext.
+    CASE statcode.
+      WHEN '1' .
+        stattext = 'Male' .
+      WHEN '2'.
+        stattext = 'Female' .
+
+      WHEN OTHERS.
+        MESSAGE 'Get a valid entry' TYPE 'i'.
+    ENDCASE.
+  ENDMETHOD.
+
+
+ENDCLASS.
